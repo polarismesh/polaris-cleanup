@@ -27,10 +27,11 @@ import (
 
 // AppConfig agent configuration on startup
 type AppConfig struct {
-	InstanceId string  `yaml:"instanceId"`
-	Store      Store   `yaml:"store"`
-	Server     Server  `yaml:"server"`
-	Cleanup    Cleanup `yaml:"cleanUp"`
+	InstanceId string   `yaml:"instanceId"`
+	Store      Store    `yaml:"store"`
+	Server     Server   `yaml:"server"`
+	Cleanup    Cleanup  `yaml:"cleanUp"`
+	OpenJob    []string `yaml:"openJob"`
 }
 
 type Server struct {

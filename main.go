@@ -18,15 +18,9 @@
 package main
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/polarismesh/polaris-cleanup/cmd"
 )
 
 func main() {
-	if err := cmd.Execute(); err != nil {
-		fmt.Printf("error: %s\n", err.Error())
-		os.Exit(-1)
-	}
+	cmd.Execute()
 }

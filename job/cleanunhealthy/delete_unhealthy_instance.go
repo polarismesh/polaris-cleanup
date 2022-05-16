@@ -21,35 +21,46 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 
 	"io/ioutil"
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/polarismesh/polaris-cleanup/common"
+	"github.com/polarismesh/polaris-cleanup/job"
+	"github.com/polarismesh/polaris-cleanup/store"
 
 	//数据库操作相关库
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang/glog"
 )
 
-// DeleteUnHealthyInstanceJob
-type DeleteUnHealthyInstanceJob struct {
-	cfg      common.AppConfig
-	cronSpec string
+func init() {
+	job.RegisterJob(&DeleteUnHealthyInstanceJob{})
 }
 
-// NewDeleteUnHealthyInstanceJob
-func NewDeleteUnHealthyInstanceJob(spec string, cfg common.AppConfig) *DeleteUnHealthyInstanceJob {
-	return &DeleteUnHealthyInstanceJob{
-		cfg:      cfg,
-		cronSpec: spec,
-	}
+// DeleteUnHealthyInstanceJob
+type DeleteUnHealthyInstanceJob struct {
+	cfg common.AppConfig
+}
+
+func (job *DeleteUnHealthyInstanceJob) Init(cfg common.AppConfig) {
+	job.cfg = cfg
+}
+
+func (job *DeleteUnHealthyInstanceJob) Name() string {
+	return "DeleteUnHealthyInstance"
+}
+
+func (job *DeleteUnHealthyInstanceJob) Destory() error {
+	return nil
 }
 
 // CronSpec
 func (job *DeleteUnHealthyInstanceJob) CronSpec() string {
-	return job.cronSpec
+	return "0 0 2 * * ?"
 }
 
 // Execute
@@ -118,9 +129,10 @@ func getParams(ids []string, cfg common.AppConfig) ([]byte, error) {
 }
 
 func (job *DeleteUnHealthyInstanceJob) sendHttpRequest(deleteInstances []string, cfg common.AppConfig) error {
-	deleteAddress := "http://" +
-		cfg.PostAddr +
-		":8090/naming/v1/instances/delete"
+
+	endpoint := cfg.Server.Endpoints[rand.Intn(len(cfg.Server.Endpoints))]
+
+	deleteAddress := fmt.Sprintf("http://%s/naming/v1/instances/delete", endpoint)
 	//发送POST请求，删除过期的实例
 	deleteInstancesBody, err := getParams(deleteInstances, cfg)
 	if err != nil {
@@ -132,9 +144,9 @@ func (job *DeleteUnHealthyInstanceJob) sendHttpRequest(deleteInstances []string,
 		return fmt.Errorf("fail to create request, err %v", err)
 	}
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Request-Id", cfg.RequestId)
+	request.Header.Set("Request-Id", cfg.Server.RequestPrefix+uuid.New().String())
 	request.Header.Set("Staffname", "异常实例定时自动删除")
-	request.Header.Set("X-Polaris-Token", job.cfg.XPolarisToken)
+	request.Header.Set("X-Polaris-Token", job.cfg.Server.AuthToken)
 	resp, err := client.Do(request)
 	if err != nil {
 		return fmt.Errorf("fail to get response, err %v", err)
@@ -166,15 +178,7 @@ func (job *DeleteUnHealthyInstanceJob) deleteUnHealthInstance(cfg common.AppConf
 	var deleteInstances []string
 	var err error
 
-	//连接数据库
-	reportDataSourceName := fmt.Sprintf(
-		"%s:%s@tcp(%s:%d)/%s", cfg.ServerUser, cfg.ServerPwd, cfg.ServerDbHost, cfg.ServerDbPort, cfg.ServerDbName)
-	reportSQL, err := common.NewMysqlDB(reportDataSourceName)
-	if err != nil {
-		return fmt.Errorf("fail to open database %s, err is %v", cfg.ServerDbName, err)
-	}
-
-	rows, err := reportSQL.Query(selectReportSQL, cfg.LimitedTime, cfg.LimitedNum)
+	rows, err := store.GetStore().GetDB().Query(selectReportSQL, cfg.Cleanup.LimitedTime, cfg.Cleanup.LimitedNum)
 	if err != nil {
 		return err
 	}
@@ -192,7 +196,7 @@ func (job *DeleteUnHealthyInstanceJob) deleteUnHealthInstance(cfg common.AppConf
 	}
 
 	counter := 0
-	batchDeleteNum := cfg.BatchDeleteNum
+	batchDeleteNum := cfg.Cleanup.BatchDeleteNum
 	if batchDeleteNum == 0 {
 		batchDeleteNum = 100
 	}

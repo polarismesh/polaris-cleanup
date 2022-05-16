@@ -18,39 +18,30 @@
 package bootstrap
 
 import (
-	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/golang/glog"
 	"github.com/polarismesh/polaris-cleanup/common"
-	"github.com/polarismesh/polaris-cleanup/job"
 )
 
-func Run(filePath string) error {
+var linuxSignals = []os.Signal{
+	syscall.SIGINT, syscall.SIGTERM,
+	syscall.SIGSEGV, syscall.SIGUSR1,
+}
 
-	// 从环境变量中获取配置
-	appConfig, err := common.LoadConfig(filePath)
-	if err != nil {
-		return err
-	}
-
-	glog.Infof("get config %v", appConfig)
-
-	sc := common.NewDefaultScheduler()
-	sc.Start()
-
-	jobs := job.GetAllRegister()
-	openJobs := appConfig.OpenJob
-
-	for i := range openJobs {
-		task := jobs[openJobs[i]]
-
-		task.Init(*appConfig)
-		if _, err = sc.AddJob(task); err != nil {
-			return fmt.Errorf("add job=[%s] fail %+v", task.Name(), err)
+// RunMainLoop server主循环
+func RunMainLoop(sc *common.Scheduler) {
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, linuxSignals...)
+	for {
+		select {
+		case s := <-ch:
+			sc.Stop()
+			// restart信号
+			glog.Infof("catch signal(%+v), stop servers", s)
+			return
 		}
-		glog.Infof("start job=[%s]", task.Name())
 	}
-
-	RunMainLoop(sc)
-	return nil
 }

@@ -30,8 +30,8 @@ var (
 	startCmd = &cobra.Command{
 		Use:   "start",
 		Short: "start polaris agent",
-		Long:  "this command start polaris agent",
-		Run: func(cmd *cobra.Command, args []string) {
+		Long:  "this command start polaris cleanup",
+		Run: func(_ *cobra.Command, _ []string) {
 			// 初始化任务
 			err := bootstrap.Run(configFilePath)
 			if err != nil {

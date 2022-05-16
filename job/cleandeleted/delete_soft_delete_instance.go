@@ -25,26 +25,34 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang/glog"
 	"github.com/polarismesh/polaris-cleanup/common"
+	"github.com/polarismesh/polaris-cleanup/job"
 	"github.com/polarismesh/polaris-cleanup/store"
 )
 
-// DeleteSoftDeleteInstanceJob
-type DeleteSoftDeleteInstanceJob struct {
-	cfg      common.AppConfig
-	cronSpec string
+func init() {
+	job.RegisterJob(&DeleteSoftDeleteInstanceJob{})
 }
 
-// NewDeleteSoftDeleteInstanceJob 构造器
-func NewDeleteSoftDeleteInstanceJob(spec string, cfg common.AppConfig) *DeleteSoftDeleteInstanceJob {
-	return &DeleteSoftDeleteInstanceJob{
-		cfg:      cfg,
-		cronSpec: spec,
-	}
+// DeleteSoftDeleteInstanceJob
+type DeleteSoftDeleteInstanceJob struct {
+	cfg common.AppConfig
+}
+
+func (job *DeleteSoftDeleteInstanceJob) Init(cfg common.AppConfig) {
+	job.cfg = cfg
+}
+
+func (job *DeleteSoftDeleteInstanceJob) Name() string {
+	return "DeleteSoftDeleteInstance"
+}
+
+func (job *DeleteSoftDeleteInstanceJob) Destory() error {
+	return nil
 }
 
 // CronSpec
 func (job *DeleteSoftDeleteInstanceJob) CronSpec() string {
-	return job.cronSpec
+	return "0 0 1 * * ?"
 }
 
 // Execute
@@ -81,7 +89,7 @@ func deleteSoftDeleteInstance(cfg common.AppConfig) error {
 	return nil
 }
 
-func iteratorInstance(db *common.PolarisDB, cfg common.AppConfig, deleteInstances []string) error {
+func iteratorInstance(db *store.PolarisDB, cfg common.AppConfig, deleteInstances []string) error {
 
 	counter := 0
 	batchDeleteNum := cfg.Cleanup.BatchDeleteNum

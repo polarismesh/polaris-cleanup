@@ -20,13 +20,41 @@ package store
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/golang/glog"
+	"github.com/polarismesh/polaris-cleanup/common"
 )
+
+var (
+	s = new(PolarisDB)
+)
+
+func Initialize(cfg common.AppConfig) error {
+
+	dbSource := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", cfg.Store.DbUser, cfg.Store.DbPwd,
+		cfg.Store.DbHost, cfg.Store.DbPort, cfg.Store.DbName)
+	db, err := NewPolarisDB(dbSource)
+	if err != nil {
+		glog.Errorf("[ERROR] new polaris db err: %s", err.Error())
+	}
+
+	s = db
+
+	return nil
+}
+
+func GetStore() *PolarisDB {
+	return s
+}
 
 // PolarisDB 操作polaris数据库的工具类
 type PolarisDB struct {
 	db *sql.DB
+}
+
+func (p *PolarisDB) GetDB() *sql.DB {
+	return p.db
 }
 
 // Close 关闭数据库连接

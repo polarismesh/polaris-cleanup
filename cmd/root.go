@@ -27,9 +27,9 @@ import (
 
 var (
 	rootCmd = &cobra.Command{
-		Use:          "polaris-server-agent",
-		Short:        "polaris-server-agent is used to clean the dirty instances",
-		Long:         "polaris-server-agent is used to verify the node in platform and clean the dirty instances",
+		Use:          "polaris-cleanup",
+		Short:        "polaris-cleanup is used to clean the dirty instances",
+		Long:         "polaris-cleanup is used to verify the node in platform and clean the dirty instances",
 		SilenceUsage: true,
 	}
 )

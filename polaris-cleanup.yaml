@@ -13,3 +13,6 @@ cleanup:
   deleteLimitedTime:
   deleteLimitedNum:
   batchDeleteNum:
+openJob:
+  - DeleteSoftDeleteInstance
+  - DeleteUnHealthyInstance

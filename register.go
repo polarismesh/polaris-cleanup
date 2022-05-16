@@ -15,42 +15,9 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package bootstrap
+package main
 
 import (
-	"fmt"
-
-	"github.com/golang/glog"
-	"github.com/polarismesh/polaris-cleanup/common"
-	"github.com/polarismesh/polaris-cleanup/job"
+	_ "github.com/polarismesh/polaris-cleanup/job/cleandeleted"
+	_ "github.com/polarismesh/polaris-cleanup/job/cleanunhealthy"
 )
-
-func Run(filePath string) error {
-
-	// 从环境变量中获取配置
-	appConfig, err := common.LoadConfig(filePath)
-	if err != nil {
-		return err
-	}
-
-	glog.Infof("get config %v", appConfig)
-
-	sc := common.NewDefaultScheduler()
-	sc.Start()
-
-	jobs := job.GetAllRegister()
-	openJobs := appConfig.OpenJob
-
-	for i := range openJobs {
-		task := jobs[openJobs[i]]
-
-		task.Init(*appConfig)
-		if _, err = sc.AddJob(task); err != nil {
-			return fmt.Errorf("add job=[%s] fail %+v", task.Name(), err)
-		}
-		glog.Infof("start job=[%s]", task.Name())
-	}
-
-	RunMainLoop(sc)
-	return nil
-}
