@@ -15,11 +15,12 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package common
+package store
 
 import (
 	"database/sql"
 	"errors"
+
 	"github.com/golang/glog"
 )
 

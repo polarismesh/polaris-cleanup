@@ -1,0 +1,15 @@
+store:
+  dbHost: ##DBHOST##
+  dbPort: ##DBPORT##
+  dbName: ##DBNAME##
+  dbUser: ##DBUSER##
+  dbPwd: ##DBPWD##
+server:
+  endpoints:
+    - 127.0.0.1:8090
+  authToken: # 如果北极星server开启了鉴权，则需要填写用户/用户组的token凭据
+  requestPrefix: polaris-cleanup-
+cleanup:
+  deleteLimitedTime:
+  deleteLimitedNum:
+  batchDeleteNum:

@@ -104,8 +104,7 @@ func getParams(ids []string, cfg common.AppConfig) ([]byte, error) {
 	var responses []ResponseParam
 	for _, id := range ids {
 		resp := ResponseParam{
-			ServiceToken: cfg.ServiceToken,
-			Id:           id,
+			Id: id,
 		}
 		responses = append(responses, resp)
 

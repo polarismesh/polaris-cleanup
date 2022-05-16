@@ -25,6 +25,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang/glog"
 	"github.com/polarismesh/polaris-cleanup/common"
+	"github.com/polarismesh/polaris-cleanup/store"
 )
 
 // DeleteSoftDeleteInstanceJob
@@ -58,15 +59,15 @@ func (job *DeleteSoftDeleteInstanceJob) Execute() func() {
 
 func deleteSoftDeleteInstance(cfg common.AppConfig) error {
 	glog.Info("begin delete soft delete instance task")
-	dbSource := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", cfg.ServerUser, cfg.ServerPwd,
-		cfg.ServerDbHost, cfg.ServerDbPort, cfg.ServerDbName)
-	db, err := common.NewPolarisDB(dbSource)
+	dbSource := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", cfg.Store.DbUser, cfg.Store.DbPwd,
+		cfg.Store.DbHost, cfg.Store.DbPort, cfg.Store.DbName)
+	db, err := store.NewPolarisDB(dbSource)
 	if err != nil {
 		glog.Errorf("[ERROR] new polaris db err: %s", err.Error())
 	}
 	defer db.Close()
 
-	instances, err := db.LoadAllInvalidInstances(cfg.LimitedTime, cfg.LimitedNum)
+	instances, err := db.LoadAllInvalidInstances(cfg.Cleanup.LimitedTime, cfg.Cleanup.LimitedNum)
 	if err != nil {
 		glog.Errorf("database load all invalid instances err: %s", err.Error())
 		return err
@@ -83,7 +84,7 @@ func deleteSoftDeleteInstance(cfg common.AppConfig) error {
 func iteratorInstance(db *common.PolarisDB, cfg common.AppConfig, deleteInstances []string) error {
 
 	counter := 0
-	batchDeleteNum := cfg.BatchDeleteNum
+	batchDeleteNum := cfg.Cleanup.BatchDeleteNum
 	if batchDeleteNum == 0 {
 		batchDeleteNum = 100
 	}

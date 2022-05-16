@@ -17,22 +17,64 @@
 
 package common
 
+import (
+	"errors"
+	"fmt"
+	"os"
+
+	"gopkg.in/yaml.v2"
+)
+
 // AppConfig agent configuration on startup
 type AppConfig struct {
-	//polaris_server数据库
-	ServerDbHost    string   `yaml:"server_db_host"`
-	ServerDbPort    int      `yaml:"server_db_port"`
-	ServerUser      string   `yaml:"server_user"`
-	ServerPwd       string   `yaml:"server_pwd"`
-	ServerDbName    string   `yaml:"server_db_name"`
-	ServiceToken    string   `yaml:"service_token"`
-	PostAddr        string   `yaml:"Post-Address"`
-	RequestId       string   `yaml:"Request-Id"`
-	TtlTimes        int      `yaml:"ttl_times"`
-	SoftLimitedTime int      `yaml:"soft_limited_time"`
-	LimitedTime     int      `yaml:"delete_limitedTime"`
-	LimitedNum      int      `yaml:"delete_limitedNum"`
-	BatchDeleteNum  int      `yaml:"batch_delete_num"`
-	InstanceId      string   `yaml:"instanceId"`
-	CheckingService []string `yaml:"checkingService"`
+	InstanceId string  `yaml:"instanceId"`
+	Store      Store   `yaml:"store"`
+	Server     Server  `yaml:"server"`
+	Cleanup    Cleanup `yaml:"cleanUp"`
+}
+
+type Server struct {
+	Endpoints     []string `yaml:"endpoints"`
+	AuthToken     string   `yaml:"authToken"`
+	RequestPrefix string   `yaml:"requestPrefix"`
+}
+
+type Cleanup struct {
+	LimitedTime    int `yaml:"deleteLimitedTime"`
+	LimitedNum     int `yaml:"deleteLimitedNum"`
+	BatchDeleteNum int `yaml:"batchDeleteNum"`
+}
+
+type Store struct {
+	DbHost string `yaml:"dbHost"`
+	DbPort int    `yaml:"dbPort"`
+	DbName string `yaml:"dbName"`
+	DbUser string `yaml:"dbUser"`
+	DbPwd  string `yaml:"dbPwd"`
+}
+
+func LoadConfig(filePath string) (*AppConfig, error) {
+	if filePath == "" {
+		err := errors.New("invalid config file path")
+		fmt.Printf("[ERROR] %v\n", err)
+		return nil, err
+	}
+
+	fmt.Printf("[INFO] load config from %v\n", filePath)
+
+	file, err := os.Open(filePath)
+	if err != nil {
+		fmt.Printf("[ERROR] %v\n", err)
+		return nil, err
+	}
+	defer file.Close()
+
+	config := &AppConfig{}
+	err = yaml.NewDecoder(file).Decode(config)
+	if err != nil {
+		fmt.Printf("[ERROR] %v\n", err)
+		return nil, err
+	}
+
+	return config, nil
 }
