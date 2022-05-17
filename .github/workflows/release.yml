@@ -6,7 +6,7 @@ on:
 
 jobs:
   release:
-    name: Release polaris
+    name: Release polaris-cleanup
     runs-on: ubuntu-latest
     strategy:
       matrix:

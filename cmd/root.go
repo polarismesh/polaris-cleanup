@@ -19,10 +19,10 @@ package cmd
 
 import (
 	"flag"
+	"time"
+
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
-	"net/http"
-	"time"
 )
 
 var (
@@ -47,22 +47,12 @@ func Execute() error {
 	defer glog.Flush()
 
 	go func() {
-		go func() {
-			//1秒刷一次日志
-			ticker := time.NewTicker(time.Second)
-			defer ticker.Stop()
-			for {
-				select {
-				case <-ticker.C:
-					glog.Flush()
-				}
-			}
-		}()
-	}()
-
-	go func() {
-		// 默认用来调试的
-		glog.Errorf("%s", http.ListenAndServe(":8088", nil))
+		//1秒刷一次日志
+		ticker := time.NewTicker(time.Second)
+		defer ticker.Stop()
+		for range ticker.C {
+			glog.Flush()
+		}
 	}()
 
 	return rootCmd.Execute()
