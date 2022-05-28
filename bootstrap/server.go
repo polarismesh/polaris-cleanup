@@ -42,7 +42,10 @@ func Run(filePath string) error {
 	openJobs := appConfig.OpenJob
 
 	for i := range openJobs {
-		task := jobs[openJobs[i]]
+		task, ok := jobs[openJobs[i]]
+		if !ok {
+			panic("JOB NOT FOUND - " + openJobs[i])
+		}
 
 		task.Init(*appConfig)
 		if _, err = sc.AddJob(task); err != nil {

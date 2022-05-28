@@ -29,17 +29,12 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/polarismesh/polaris-cleanup/common"
-	"github.com/polarismesh/polaris-cleanup/job"
 	"github.com/polarismesh/polaris-cleanup/store"
 
 	//数据库操作相关库
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang/glog"
 )
-
-func init() {
-	job.RegisterJob(&DeleteUnHealthyInstanceJob{})
-}
 
 // DeleteUnHealthyInstanceJob
 type DeleteUnHealthyInstanceJob struct {

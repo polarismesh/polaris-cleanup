@@ -25,13 +25,8 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang/glog"
 	"github.com/polarismesh/polaris-cleanup/common"
-	"github.com/polarismesh/polaris-cleanup/job"
 	"github.com/polarismesh/polaris-cleanup/store"
 )
-
-func init() {
-	job.RegisterJob(&DeleteSoftDeleteInstanceJob{})
-}
 
 // DeleteSoftDeleteInstanceJob
 type DeleteSoftDeleteInstanceJob struct {

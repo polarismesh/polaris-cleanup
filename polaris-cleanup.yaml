@@ -16,3 +16,4 @@ cleanup:
 openJob:
   - DeleteSoftDeleteInstance
   - DeleteUnHealthyInstance
+  - DeleteEmptyService
