@@ -1,6 +1,5 @@
-polaris-server
-polaris-server-release
-polaris-server-release.tar.gz
+polaris-cleanup
+polaris-cleanup-release*
 
 /log/
 /statis/

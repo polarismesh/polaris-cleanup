@@ -19,11 +19,20 @@ package job
 
 import (
 	"github.com/polarismesh/polaris-cleanup/common"
+	"github.com/polarismesh/polaris-cleanup/job/cleandeleted"
+	"github.com/polarismesh/polaris-cleanup/job/cleanempty"
+	"github.com/polarismesh/polaris-cleanup/job/cleanunhealthy"
 )
 
 var (
 	slots map[string]PolarisCleanJob = map[string]PolarisCleanJob{}
 )
+
+func init() {
+	RegisterJob(&cleandeleted.DeleteSoftDeleteInstanceJob{})
+	RegisterJob(&cleanunhealthy.DeleteUnHealthyInstanceJob{})
+	RegisterJob(&cleanempty.DeleteEmptyServiceJob{})
+}
 
 func RegisterJob(j PolarisCleanJob) {
 	slots[j.Name()] = j

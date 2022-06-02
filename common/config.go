@@ -20,6 +20,7 @@ package common
 import (
 	"errors"
 	"fmt"
+	"math/rand"
 	"os"
 
 	"gopkg.in/yaml.v2"
@@ -78,4 +79,8 @@ func LoadConfig(filePath string) (*AppConfig, error) {
 	}
 
 	return config, nil
+}
+
+func (s Server) ChooseOneEndpoint() string {
+	return s.Endpoints[rand.Intn(len(s.Endpoints))]
 }
